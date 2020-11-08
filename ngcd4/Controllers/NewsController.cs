@@ -11,48 +11,48 @@ namespace ngcd4.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class NewsTypesController : ControllerBase
+    public class NewsController : ControllerBase
     {
         private readonly CoreDbContext _context;
 
-        public NewsTypesController(CoreDbContext context)
+        public NewsController(CoreDbContext context)
         {
             _context = context;
         }
 
-        // GET: api/NewsTypes
+        // GET: api/News
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<NewsType>>> GetNewsType()
+        public async Task<ActionResult<IEnumerable<News>>> GetNews()
         {
-            return await _context.NewsType.ToListAsync();
+            return await _context.News.ToListAsync();
         }
 
-        // GET: api/NewsTypes/5
+        // GET: api/News/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<NewsType>> GetNewsType(string id)
+        public async Task<ActionResult<News>> GetNews(string id)
         {
-            var newsType = await _context.NewsType.FindAsync(id);
+            var news = await _context.News.FindAsync(id);
 
-            if (newsType == null)
+            if (news == null)
             {
                 return NotFound();
             }
 
-            return newsType;
+            return news;
         }
 
-        // PUT: api/NewsTypes/5
+        // PUT: api/News/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutNewsType(string id, NewsType newsType)
+        public async Task<IActionResult> PutNews(string id, News news)
         {
-            if (id != newsType.Id)
+            if (id != news.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(newsType).State = EntityState.Modified;
+            _context.Entry(news).State = EntityState.Modified;
 
             try
             {
@@ -60,7 +60,7 @@ namespace ngcd4.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!NewsTypeExists(id))
+                if (!NewsExists(id))
                 {
                     return NotFound();
                 }
@@ -73,20 +73,20 @@ namespace ngcd4.Controllers
             return NoContent();
         }
 
-        // POST: api/NewsTypes
+        // POST: api/News
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<NewsType>> PostNewsType(NewsType newsType)
+        public async Task<ActionResult<News>> PostNews(News news)
         {
-            _context.NewsType.Add(newsType);
+            _context.News.Add(news);
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException)
             {
-                if (NewsTypeExists(newsType.Id))
+                if (NewsExists(news.Id))
                 {
                     return Conflict();
                 }
@@ -96,39 +96,28 @@ namespace ngcd4.Controllers
                 }
             }
 
-            return CreatedAtAction("GetNewsType", new { id = newsType.Id }, newsType);
+            return CreatedAtAction("GetNews", new { id = news.Id }, news);
         }
 
-        // DELETE: api/NewsTypes/5
+        // DELETE: api/News/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<NewsType>> DeleteNewsType(string id)
+        public async Task<ActionResult<News>> DeleteNews(string id)
         {
-            var newsType = await _context.NewsType.FindAsync(id);
-            if (newsType == null)
+            var news = await _context.News.FindAsync(id);
+            if (news == null)
             {
                 return NotFound();
             }
 
-            _context.NewsType.Remove(newsType);
+            _context.News.Remove(news);
             await _context.SaveChangesAsync();
 
-            return newsType;
+            return news;
         }
 
-        [HttpGet("{search}/{name?}")]
-        public async Task<IEnumerable<NewsType>> Search(string name, string news)
+        private bool NewsExists(string id)
         {
-            IQueryable<NewsType> query = _context.NewsType;
-            if (!string.IsNullOrEmpty(name))
-            {
-                query = query.Where(e => e.NewstypeName.Contains(name));
-
-            }
-            return await query.ToListAsync();
-        }
-        private bool NewsTypeExists(string id)
-        {
-            return _context.NewsType.Any(e => e.Id == id);
+            return _context.News.Any(e => e.Id == id);
         }
     }
 }

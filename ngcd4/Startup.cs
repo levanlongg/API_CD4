@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ngcd4.Models;
+using ngcd4.Services.Client.User;
 
 namespace ngcd4
 {
@@ -28,6 +29,7 @@ namespace ngcd4
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<CoreDbContext>(op => op.UseSqlServer(Configuration.GetConnectionString("Database")));
+            services.AddTransient<IUserService, UserServices>();
             services.AddControllers();
         }
 
