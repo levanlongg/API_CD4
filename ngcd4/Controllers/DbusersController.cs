@@ -1,170 +1,68 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Threading.Tasks;
-//using Microsoft.AspNetCore.Authorization;
-//using Microsoft.AspNetCore.Http;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.EntityFrameworkCore;
-//using ngcd4.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using ngcd4.Services.Client.User;
+using ngcd4.ViewModels.Client.User;
 
-//namespace ngcd4.Controllers
-//{
-//    [Route("api/[controller]")]
-//    [ApiController]
-//    public class DbusersController : ControllerBase
-//    {
-//        private readonly CoreDbContext _context;
+namespace ngcd4.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class DbusersController : ControllerBase
+    {
+        private readonly IUserService _context;
 
-//        public DbusersController(CoreDbContext context)
-//        {
-//            _context = context;
-//        }
-//        [HttpGet]
-//        [AllowAnonymous]
-//        public IActionResult Login([FromRoute] string returnUrl = "")
-//        {
-//            var model = new Dbuser { ReturnUrl = returnUrl };
-//            return View(model);
-//        }
+        public DbusersController(IUserService context)
+        {
+            _context = context;
+        }
+        // GET: api/<UsersController>
+        [HttpGet]
+        public IEnumerable<string> Get()
+        {
+            return new string[] { "value1", "value2" };
+        }
 
-//        [HttpPost]
-//        [AllowAnonymous]
-//        [ValidateAntiForgeryToken]
-//        public async Task<IActionResult> Login(LoginViewModel model, [FromRoute] string returnUrl = null)
-//        {
-//            ViewData["ReturnUrl"] = returnUrl;
-//            if (ModelState.IsValid)
-//            {
-//                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-//                if (result.Succeeded)
-//                {
-//                    //update LatestLogin
-//                    var user = await _userManager.FindByEmailAsync(model.Email);
-//                    user.LatestLogin = DateTime.Now;
-//                    await _userManager.UpdateAsync(user);
+        // GET api/<UsersController>/5
+        [HttpGet("{id}")]
+        public string Get(int id)
+        {
+            return "value";
+        }
 
-//                    _logger.LogInformation(1, "User logged in.");
-//                    return RedirectToLocal(returnUrl);
-//                }
-//                if (result.RequiresTwoFactor)
-//                {
-//                    return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
-//                }
-//                if (result.IsLockedOut)
-//                {
-//                    _logger.LogWarning(2, "User account locked out.");
-//                    return View("Lockout");
-//                }
-//                else
-//                {
-//                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-//                    return View(model);
-//                }
-//            }
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] UserLoginViewModel user)
+        {
+            var us = await _context.Login(user);
+            return Ok(us);
+        }
 
-//            // If we got this far, something failed, redisplay form
-//            return View(model);
-//        }
+        // POST api/<UsersController>
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] UserRegisterViewModel user)
+        {
+            var res = await _context.Register(user);
+            if (res == 0)
+                return BadRequest();
+            return Ok(res);
+        }
 
-//        // GET: api/Dbusers
-//        //[HttpGet]
-//        //public async Task<ActionResult<IEnumerable<Dbuser>>> GetDbuser()
-//        //{
-//        //    return await _context.Dbuser.ToListAsync();
-//        //}
+        // PUT api/<UsersController>/5
+        [HttpPut("{id}")]
+        public void Put(int id, [FromBody] string value)
+        {
+        }
 
-//        //// GET: api/Dbusers/5
-//        //[HttpGet("{id}")]
-//        //public async Task<ActionResult<Dbuser>> GetDbuser(string id)
-//        //{
-//        //    var dbuser = await _context.Dbuser.FindAsync(id);
+        // DELETE api/<UsersController>/5
+        [HttpDelete("{id}")]
+        public void Delete(int id)
+        {
+        }
 
-//        //    if (dbuser == null)
-//        //    {
-//        //        return NotFound();
-//        //    }
-
-//        //    return dbuser;
-//        //}
-
-//        //// PUT: api/Dbusers/5
-//        //// To protect from overposting attacks, enable the specific properties you want to bind to, for
-//        //// more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-//        //[HttpPut("{id}")]
-//        //public async Task<IActionResult> PutDbuser(string id, Dbuser dbuser)
-//        //{
-//        //    if (id != dbuser.Id)
-//        //    {
-//        //        return BadRequest();
-//        //    }
-
-//        //    _context.Entry(dbuser).State = EntityState.Modified;
-
-//        //    try
-//        //    {
-//        //        await _context.SaveChangesAsync();
-//        //    }
-//        //    catch (DbUpdateConcurrencyException)
-//        //    {
-//        //        if (!DbuserExists(id))
-//        //        {
-//        //            return NotFound();
-//        //        }
-//        //        else
-//        //        {
-//        //            throw;
-//        //        }
-//        //    }
-
-//        //    return NoContent();
-//        //}
-
-//        //// POST: api/Dbusers
-//        //// To protect from overposting attacks, enable the specific properties you want to bind to, for
-//        //// more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-//        //[HttpPost]
-//        //public async Task<ActionResult<Dbuser>> PostDbuser(Dbuser dbuser)
-//        //{
-//        //    _context.Dbuser.Add(dbuser);
-//        //    try
-//        //    {
-//        //        await _context.SaveChangesAsync();
-//        //    }
-//        //    catch (DbUpdateException)
-//        //    {
-//        //        if (DbuserExists(dbuser.Id))
-//        //        {
-//        //            return Conflict();
-//        //        }
-//        //        else
-//        //        {
-//        //            throw;
-//        //        }
-//        //    }
-
-//        //    return CreatedAtAction("GetDbuser", new { id = dbuser.Id }, dbuser);
-//        //}
-
-//        //// DELETE: api/Dbusers/5
-//        //[HttpDelete("{id}")]
-//        //public async Task<ActionResult<Dbuser>> DeleteDbuser(string id)
-//        //{
-//        //    var dbuser = await _context.Dbuser.FindAsync(id);
-//        //    if (dbuser == null)
-//        //    {
-//        //        return NotFound();
-//        //    }
-
-//        //    _context.Dbuser.Remove(dbuser);
-//        //    await _context.SaveChangesAsync();
-
-//        //    return dbuser;
-//        //}
-
-//        //private bool DbuserExists(string id)
-//        //{
-//        //    return _context.Dbuser.Any(e => e.Id == id);
-//        //}
-//    }
-//}
+    }
+}
