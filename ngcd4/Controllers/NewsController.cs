@@ -114,7 +114,17 @@ namespace ngcd4.Controllers
 
             return news;
         }
+        [HttpGet("{search}/{name?}")]
+        public async Task<IEnumerable<News>> Search(string name, string news)
+        {
+            IQueryable<News> query = _context.News;
+            if (!string.IsNullOrEmpty(name))
+            {
+                query = query.Where(e => e.Title.Contains(name));
 
+            }
+            return await query.ToListAsync();
+        }
         private bool NewsExists(string id)
         {
             return _context.News.Any(e => e.Id == id);

@@ -115,6 +115,17 @@ namespace ngcd4.Controllers
             return producer;
         }
 
+        [HttpGet("{search}/{name?}")]
+        public async Task<IEnumerable<Producer>> Search(string name, string news)
+        {
+            IQueryable<Producer> query = _context.Producer;
+            if (!string.IsNullOrEmpty(name))
+            {
+                query = query.Where(e => e.ProducerName.Contains(name));
+
+            }
+            return await query.ToListAsync();
+        }
         private bool ProducerExists(string id)
         {
             return _context.Producer.Any(e => e.Id == id);

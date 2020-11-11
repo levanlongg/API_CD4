@@ -5,9 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
-using ngcd4.Services.Client.User;
-using ngcd4.ViewModels.Client.User;
+using ngcd4.Models;
 
 namespace ngcd4.Controllers
 {
@@ -15,54 +13,122 @@ namespace ngcd4.Controllers
     [ApiController]
     public class DbusersController : ControllerBase
     {
-        private readonly IUserService _context;
+        private readonly CoreDbContext _context;
 
-        public DbusersController(IUserService context)
+        public DbusersController(CoreDbContext context)
         {
             _context = context;
         }
-        // GET: api/<UsersController>
+
+        // GET: api/Dbusers
         [HttpGet]
-        public IEnumerable<string> Get()
+        public async Task<ActionResult<IEnumerable<Dbuser>>> GetDbuser()
         {
-            return new string[] { "value1", "value2" };
+            return await _context.Dbuser.ToListAsync();
         }
 
-        // GET api/<UsersController>/5
+        // GET: api/Dbusers/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<ActionResult<Dbuser>> GetDbuser(string id)
         {
-            return "value";
+            var dbuser = await _context.Dbuser.FindAsync(id);
+
+            if (dbuser == null)
+            {
+                return NotFound();
+            }
+
+            return dbuser;
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UserLoginViewModel user)
-        {
-            var us = await _context.Login(user);
-            return Ok(us);
-        }
-
-        // POST api/<UsersController>
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] UserRegisterViewModel user)
-        {
-            var res = await _context.Register(user);
-            if (res == 0)
-                return BadRequest();
-            return Ok(res);
-        }
-
-        // PUT api/<UsersController>/5
+        // PUT: api/Dbusers/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for
+        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<IActionResult> PutDbuser(string id, Dbuser dbuser)
         {
+            if (id != dbuser.Id)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(dbuser).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!DbuserExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
 
-        // DELETE api/<UsersController>/5
+        // POST: api/Dbusers
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for
+        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
+        [HttpPost]
+        public async Task<ActionResult<Dbuser>> PostDbuser(Dbuser dbuser)
+        {
+            _context.Dbuser.Add(dbuser);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                if (DbuserExists(dbuser.Id))
+                {
+                    return Conflict();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return CreatedAtAction("GetDbuser", new { id = dbuser.Id }, dbuser);
+        }
+
+        // DELETE: api/Dbusers/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<ActionResult<Dbuser>> DeleteDbuser(string id)
         {
+            var dbuser = await _context.Dbuser.FindAsync(id);
+            if (dbuser == null)
+            {
+                return NotFound();
+            }
+
+            _context.Dbuser.Remove(dbuser);
+            await _context.SaveChangesAsync();
+
+            return dbuser;
         }
 
+        [HttpGet("{search}/{name?}")]
+        public async Task<IEnumerable<Dbuser>> Search(string name, string news)
+        {
+            IQueryable<Dbuser> query = _context.Dbuser;
+            if (!string.IsNullOrEmpty(name))
+            {
+                query = query.Where(e => e.AcountName.Contains(name));
+
+            }
+            return await query.ToListAsync();
+        }
+        private bool DbuserExists(string id)
+        {
+            return _context.Dbuser.Any(e => e.Id == id);
+        }
     }
 }

@@ -114,7 +114,17 @@ namespace ngcd4.Controllers
 
             return billSale;
         }
+        [HttpGet("{search}/{name?}")]
+        public async Task<IEnumerable<BillSale>> Search(string name, string news)
+        {
+            IQueryable<BillSale> query = _context.BillSale;
+            if (!string.IsNullOrEmpty(name))
+            {
+                query = query.Where(e => e.PersonImportId.Contains(name));
 
+            }
+            return await query.ToListAsync();
+        }
         private bool BillSaleExists(string id)
         {
             return _context.BillSale.Any(e => e.Id == id);
